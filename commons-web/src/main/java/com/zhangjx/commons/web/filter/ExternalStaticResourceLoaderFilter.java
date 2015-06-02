@@ -63,27 +63,35 @@ public class ExternalStaticResourceLoaderFilter implements Filter {
 			FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String uri = httpServletRequest.getRequestURI();
-		// init response before get the printwriter
-		String contentType = null;
-		if(uri.endsWith(".js")) {
-			contentType = "text/javascript";
-		} else if(uri.endsWith(".css")) {
-			contentType = "text/css";
-		} else if(uri.endsWith(".json")) {
-			contentType = "application/json";
-		} else if(uri.endsWith(".html") || uri.endsWith(".htm")) {
-			contentType = "text/html";
-		} else {
-			contentType = "application/object";
-		}
-		contentType += ";charset=" + charset;
-		response.setContentType(contentType);
-		response.setCharacterEncoding(charset);
-		PrintWriter pw = response.getWriter();
 		log.debug("request external resource :" + uri);
-		String prefix = "/" + project + external;
+		if(!project.startsWith("/")) {
+			project = "/" + project;
+		}
+		if(!external.startsWith("/")) {
+			external = "/" + external;
+		}
+		String prefix = project + external + "/";
 		if(uri.startsWith(prefix)) {
 			uri = uri.substring(prefix.length());
+			
+			// init response before get the printwriter
+			String contentType = null;
+			if(uri.endsWith(".js")) {
+				contentType = "text/javascript";
+			} else if(uri.endsWith(".css")) {
+				contentType = "text/css";
+			} else if(uri.endsWith(".json")) {
+				contentType = "application/json";
+			} else if(uri.endsWith(".html") || uri.endsWith(".htm")) {
+				contentType = "text/html";
+			} else {
+				contentType = "application/object";
+			}
+			contentType += ";charset=" + charset;
+			response.setContentType(contentType);
+			response.setCharacterEncoding(charset);
+			PrintWriter pw = response.getWriter();
+			
 			// determine whether to use cache
 			if(externalCache.containsKey(uri)) {
 				String cachedExternalContent = externalCache.get(uri).get();
@@ -104,9 +112,11 @@ public class ExternalStaticResourceLoaderFilter implements Filter {
 					sb.append(new String(bt, 0, len, DEFAULT_CHARSET));
 				}
 				String content = sb.toString();
+				
 				// cache the requested resource
 				SoftReference<String> softReference = new SoftReference<String>(content);
 				this.externalCache.put(uri, softReference);
+				
 				// output the resource to response
 				pw.write(content);
 				pw.close();

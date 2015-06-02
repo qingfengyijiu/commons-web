@@ -32,6 +32,7 @@ public class ExternalStaticResourceLoaderFilter implements Filter {
 	private static final Log log = LogFactory.getLog(ExternalStaticResourceLoaderFilter.class);
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private static final String DEFAULT_EXTERNAL = "external";
+	private static final String RESOURCE_FOLDER = "META-INF/";
 	
 	private String project;
 	
@@ -103,7 +104,7 @@ public class ExternalStaticResourceLoaderFilter implements Filter {
 				}
 			}
 			// not use cache
-			InputStream is = Resources.getResourceAsStream(uri);
+			InputStream is = Resources.getResourceAsStream(RESOURCE_FOLDER + uri);
 			try {
 				StringBuffer sb = new StringBuffer();
 				byte[] bt = new byte[1024];
